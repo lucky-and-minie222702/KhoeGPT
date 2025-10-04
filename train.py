@@ -86,12 +86,13 @@ training_args = TrainingArguments(
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 500,
+    eval_steps = 1000,
     
-    save_strategy = "best",
+    save_strategy = "steps",
+    save_steps = 1000,
     metric_for_best_model = "eval_loss",
 
-    save_total_limit = 1,
+    save_total_limit = 3,
     
     logging_strategy = "steps",
     logging_steps = 100,
@@ -122,3 +123,4 @@ trainer = Trainer(
 )
 
 trainer.train()
+trainer.save_model("best")
