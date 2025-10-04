@@ -83,7 +83,7 @@ training_args = TrainingArguments(
     per_device_eval_batch_size = 8,
 
     gradient_accumulation_steps = 8,
-    eval_accumulation_steps = 1,
+    eval_accumulation_steps = None,
     
     eval_strategy = "steps",
     eval_steps = 1,
@@ -116,6 +116,7 @@ trainer = Trainer(
     args = training_args,
     train_dataset = train_ds,
     eval_dataset = eval_ds,
+    tokenizer = tokenizer,
     callbacks = [TrainerSaveLossCallback(save_path)]
 )
 
