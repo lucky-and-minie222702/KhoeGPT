@@ -64,7 +64,7 @@ class MyDataset(Dataset):
         input_prompt = PROMPT_TEMPLATE.format(q = q, a = a)  
         inp = tokenizer(input_prompt, return_tensors = "pt", padding = "max_length", max_length = self.max_len, truncation = True)
         inp = {k: v.squeeze(0) for k, v in inp.items()}
-        inp["labels"] = inp["input_ids"].copy()
+        inp["labels"] = inp["input_ids"].clone()
         return inp
     
 df = pd.read_csv("train.csv")
@@ -86,10 +86,10 @@ training_args = TrainingArguments(
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 1000,
+    eval_steps = 500,
     
     save_strategy = "steps",
-    save_steps = 1000,
+    save_steps = 500,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
