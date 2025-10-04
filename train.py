@@ -31,7 +31,7 @@ save_path = "results"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
-config.attn_config['attn_impl'] = 'flash'
+config.attn_config['attn_impl'] = 'torch'
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
@@ -79,17 +79,17 @@ training_args = TrainingArguments(
     num_train_epochs = 3,
     learning_rate = 5e-5,
     
-    per_device_train_batch_size = 4,
-    per_device_eval_batch_size = 8,
+    per_device_train_batch_size = 8,
+    per_device_eval_batch_size = 16,
 
     gradient_accumulation_steps = 8,
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 500,
+    eval_steps = 1500,
     
     save_strategy = "steps",
-    save_steps = 500,
+    save_steps = 1500,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
