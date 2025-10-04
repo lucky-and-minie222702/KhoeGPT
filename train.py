@@ -80,10 +80,10 @@ training_args = TrainingArguments(
     learning_rate = 5e-5,
     
     per_device_train_batch_size = 4,
-    per_device_eval_batch_size = 16,
+    per_device_eval_batch_size = 8,
 
     gradient_accumulation_steps = 8,
-    eval_accumulation_steps = None,
+    eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
     eval_steps = 1,
@@ -99,6 +99,8 @@ training_args = TrainingArguments(
     
     lr_scheduler_type = "linear",
     warmup_steps = 100,   
+    
+    label_names = ["labels"],
     
     bf16 = True,
     
