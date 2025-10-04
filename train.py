@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from torch.utils.data import Dataset
 from peft import LoraConfig, TaskType, LoraModel, get_peft_model
 from sklearn.model_selection import train_test_split
@@ -30,7 +30,9 @@ class TrainerSaveLossCallback(TrainerCallback):
 save_path = "results"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
-model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype = torch.bfloat16, trust_remote_code=  True)
+config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)  
+config.attn_config['attn_impl'] = 'flash'
+model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
 lora_config = LoraConfig(
