@@ -35,8 +35,6 @@ config.attn_config['attn_impl'] = 'flash'
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
-print(model)
-
 lora_config = LoraConfig(
     r = 16,
     lora_alpha = 48,
