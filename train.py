@@ -41,10 +41,7 @@ lora_config = LoraConfig(
     r = 16,
     lora_alpha = 48,
     target_modules = [
-        "q",
-        "k",
-        "v",
-        "o",
+        "Wqkv",
     ],
     lora_dropout = 0.05,
     bias = "none",
