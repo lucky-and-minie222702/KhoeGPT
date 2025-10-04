@@ -79,17 +79,17 @@ training_args = TrainingArguments(
     num_train_epochs = 3,
     learning_rate = 5e-5,
     
-    per_device_train_batch_size = 8,
-    per_device_eval_batch_size = 16,
+    per_device_train_batch_size = 4,
+    per_device_eval_batch_size = 8,
 
     gradient_accumulation_steps = 8,
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 850,
+    eval_steps = 1500,
     
     save_strategy = "steps",
-    save_steps = 850,
+    save_steps = 1500,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
