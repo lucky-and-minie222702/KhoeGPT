@@ -88,9 +88,6 @@ class MyDataset(Dataset):
     def __getitem__(self, index):
         quest, ans = get_q_a(self.data[index])
         
-        quest = "" if np.isnan(quest) else quest
-        ans = "" if np.isnan(ans) else ans
-        
         input_prompt = PROMPT_TEMPLATE.format(q = quest)  
         inp = tokenizer(text = input_prompt, return_tensors = "pt", padding = False, truncation = False)
         full = tokenizer(text = input_prompt + " " + ans, return_tensors = "pt", padding = False, truncation = False)
@@ -110,15 +107,13 @@ class MyDataset(Dataset):
 df = pd.read_csv("train.csv")
 train_df, eval_df = train_test_split(df, test_size = 0.15, random_state = 22022009)
 
-# phasse 1
-def to_cplx(s):
-    try:
-        return len(s.split(". "))
-    except:
-        return 0
+train_df["cplx"] = train_df["content"].apply(lambda s: len(s.split(". ")))
+eval_df["cplx"] = eval_df["content"].apply(lambda s: len(s.split(". ")))
 
-train_df["cplx"] = train_df["content"].apply(to_cplx)
-eval_df["cplx"] = eval_df["content"].apply(to_cplx)
+train_df["title"] = train_df["title"].fillna("")
+train_df["content"] = train_df["content"].fillna("")
+eval_df["title"] = eval_df["title"].fillna("")
+eval_df["content"] = eval_df["content"].fillna("")
 
 if phase == 1:
     train_df = train_df[train_df["cplx"] <= 8]
@@ -131,7 +126,7 @@ training_args = TrainingArguments(
     output_dir = save_path,
     
     num_train_epochs = 2,
-    learning_rate = 5e-5 // phase,
+    learning_rate = 8e-5 // phase,
     
     per_device_train_batch_size = 4 // phase,
     per_device_eval_batch_size = 8,
