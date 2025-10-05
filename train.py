@@ -51,7 +51,7 @@ model = get_peft_model(model, lora_config)
 
 
 # dataset
-PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời: {a}"  
+PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
 class MyDataset(Dataset):
     def __init__(self, df):
@@ -63,9 +63,9 @@ class MyDataset(Dataset):
     def __getitem__(self, index):
         q = self.data[index]["title"]
         a = self.data[index]["content"]
-        input_prompt = PROMPT_TEMPLATE.format(q = q, a = a)  
-        inp = tokenizer(input_prompt, return_tensors = None, padding = False, truncation = False)
-        inp["labels"] = inp["input_ids"]
+        input_prompt = PROMPT_TEMPLATE.format(q = q)  
+        inp = tokenizer(text = input_prompt, text_target = a, return_tensors = None, padding = "max_length", max_length = 1024, truncation = True)
+        inp = {k: v.squeeze(0) for k, v in inp.items()}
         return inp
     
 df = pd.read_csv("train.csv")
@@ -113,11 +113,10 @@ training_args = TrainingArguments(
 
     logging_first_step = True,
 )
-data_collator = DataCollatorWithPadding(tokenizer = tokenizer, padding = "max_length", max_length = 1024)
+
 trainer = Trainer(
     model = model,
     args = training_args,
-    data_collator = data_collator,
     train_dataset = train_ds,
     eval_dataset = eval_ds,
     tokenizer = tokenizer,
