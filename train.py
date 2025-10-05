@@ -49,7 +49,7 @@ model = get_peft_model(model, lora_config)
 
 
 # dataset
-def pad_t(t, max_len, pad_token_id = 0):
+def pad_t(t, max_len, pad_token_id):
     length = t.shape[0]
 
     if length == max_len:
@@ -59,7 +59,7 @@ def pad_t(t, max_len, pad_token_id = 0):
     else:
         pad_len = max_len - length
         pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
-        return torch.cat([pad, t], dim = 0)
+        return torch.cat([t, pad], dim = 0)
 
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
@@ -82,7 +82,6 @@ class MyDataset(Dataset):
         inp = {k: v.squeeze(0) for k, v in inp.items()}
         full = {k: v.squeeze(0) for k, v in full.items()}
         
-        full["attention_mask"][:inp["attention_mask"].shape[0]:] = 0
         full["labels"] = full["input_ids"].clone()
         full["labels"][:inp["input_ids"].shape[0]:] = -100
         
