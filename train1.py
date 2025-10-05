@@ -38,8 +38,8 @@ model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
 lora_config = LoraConfig(
-    r = 16,
-    lora_alpha = 32,
+    r = 8,
+    lora_alpha = 8,
     target_modules = [
         "Wqkv",
     ],
@@ -121,16 +121,15 @@ training_args = TrainingArguments(
     output_dir = save_path,
     
     num_train_epochs = 1,
-    learning_rate = 5e-5,
+    learning_rate = 3e-5,
     
-    per_device_train_batch_size = 4,
+    per_device_train_batch_size = 8,
     per_device_eval_batch_size = 8,
 
     gradient_accumulation_steps = 4,
     eval_accumulation_steps = 1,
     
     eval_strategy = "no",
-    
     save_strategy = "no",
 
     
