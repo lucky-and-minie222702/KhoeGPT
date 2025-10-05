@@ -9,9 +9,6 @@ import json
 import numpy as np
 import sys
 
-phase = int(sys.argv[1])
-
-
 class TrainerSaveLossCallback(TrainerCallback):
     def __init__(self, output_dir, output_file = "losses.json"):
         self.output_dir = output_dir
@@ -32,8 +29,8 @@ class TrainerSaveLossCallback(TrainerCallback):
         print(f"Losses saved to {p}")
 
 
-save_path = f"results{phase}"
-model_path = "vinai/PhoGPT-4B-Chat" if phase == 1 else "best_phase_1"
+save_path = f"results2"
+model_path = "best_phase_1"
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
 config.attn_config['attn_impl'] = 'torch'
@@ -105,7 +102,7 @@ class MyDataset(Dataset):
         return full
     
 df = pd.read_csv("train.csv")
-train_df, eval_df = train_test_split(df, test_size = 0.15, random_state = 22022009)
+train_df, eval_df = train_test_split(df, test_size = 0.1, random_state = 22022009)
 
 train_df["cplx"] = train_df["content"].apply(lambda s: len(s.split(". ")))
 eval_df["cplx"] = eval_df["content"].apply(lambda s: len(s.split(". ")))
@@ -115,30 +112,27 @@ train_df["content"] = train_df["content"].fillna("")
 eval_df["title"] = eval_df["title"].fillna("")
 eval_df["content"] = eval_df["content"].fillna("")
 
-if phase == 1:
-    train_df = train_df[train_df["cplx"] <= 8]
-    eval_df = eval_df[eval_df["cplx"] <= 8]
 
-train_ds = MyDataset(train_df, 1024 * phase)
-eval_ds = MyDataset(eval_df, 1024 * phase)
+train_ds = MyDataset(train_df, 2048)
+eval_ds = MyDataset(eval_df, 2048)
 
 training_args = TrainingArguments(
     output_dir = save_path,
     
-    num_train_epochs = 2,
-    learning_rate = 8e-5 // phase,
+    num_train_epochs = 3,
+    learning_rate = 5e-5,
     
-    per_device_train_batch_size = 4 // phase,
+    per_device_train_batch_size = 2,
     per_device_eval_batch_size = 8,
 
-    gradient_accumulation_steps = 4 * phase,
+    gradient_accumulation_steps = 8,
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 1000,
+    eval_steps = 1500,
     
     save_strategy = "steps",
-    save_steps = 1000,
+    save_steps = 1500,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
@@ -172,4 +166,4 @@ trainer = Trainer(
 )
 
 trainer.train()
-trainer.save_model(f"best_phase_{phase}")
+trainer.save_model(f"best_phase_2")
