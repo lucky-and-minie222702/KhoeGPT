@@ -66,7 +66,11 @@ def pad_t(t, max_len, pad_token_id):
 def get_q_a(d):
     q = d["title"].strip()
     a = d["content"].strip()
-    a = a.split(q)[1][1::]
+    
+    if q == "" or a == "":
+        return q, a
+    
+    a = a.split(q)[1][1:]
     a = a.split(". ")
 
     return q, ". ".join(a)
