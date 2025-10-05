@@ -58,7 +58,7 @@ def pad_t(t, max_len, pad_token_id = 0):
     
     pad_len = max_len - length
     pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
-    return torch.cat([t, pad_len], dim=0)
+    return torch.cat([t, pad], dim = 0)
 
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
@@ -88,11 +88,7 @@ class MyDataset(Dataset):
         full["input_ids"] = pad_t(full["input_ids"], self.max_len, tokenizer.pad_token_id)
         full["attention_mask"] = pad_t(full["attention_mask"], self.max_len, 0)
         full["labels"] = pad_t(full["labels"], self.max_len, -100)
-        
-        
-        print(full)
-        exit()
-        
+
         return full
     
 df = pd.read_csv("train.csv")
@@ -134,7 +130,7 @@ training_args = TrainingArguments(
     
     report_to = "none",
     
-    dataloader_num_workers = 4,
+    dataloader_num_workers = 16,
     dataloader_persistent_workers = True,
     dataloader_pin_memory = True,
 
