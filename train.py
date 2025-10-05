@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from transformers import Trainer, TrainingArguments, TrainerCallback
 import json
+import os
+os.environ["COLUMNS"] = "100"
 
 class TrainerSaveLossCallback(TrainerCallback):
     def __init__(self, output_dir, output_file = "losses.json"):
