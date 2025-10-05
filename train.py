@@ -64,7 +64,7 @@ class MyDataset(Dataset):
         q = self.data[index]["title"]
         a = self.data[index]["content"]
         input_prompt = PROMPT_TEMPLATE.format(q = q, a = a)  
-        inp = tokenizer(input_prompt, return_tensors = "pt", padding = False, truncation = False)
+        inp = tokenizer(input_prompt, return_tensors = None, padding = False, truncation = False)
         # inp = {k: v.squeeze(0) for k, v in inp.items()}
         inp["labels"] = inp["input_ids"].clone()
         return inp
