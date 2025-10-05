@@ -32,10 +32,10 @@ class TrainerSaveLossCallback(TrainerCallback):
 save_path = f"results2"
 model_path = "best_phase_1"
 
-config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
+config = AutoConfig.from_pretrained("vinai/PhoGPT-4B-Chat", trust_remote_code = True)  
 config.attn_config['attn_impl'] = 'torch'
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
-tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
+tokenizer = AutoTokenizer.from_pretrained("vinai/PhoGPT-4B-Chat", trust_remote_code = True)  
 
 lora_config = LoraConfig(
     r = 16,
