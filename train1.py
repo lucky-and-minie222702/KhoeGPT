@@ -115,7 +115,7 @@ df["content"] = df["content"].fillna("")
 
 df = df[df["cplx"] < 8]
 
-ds = MyDataset(df, 1024)
+ds = MyDataset(df, 512)
 
 training_args = TrainingArguments(
     output_dir = save_path,
