@@ -113,8 +113,8 @@ eval_df["title"] = eval_df["title"].fillna("")
 eval_df["content"] = eval_df["content"].fillna("")
 
 
-train_ds = MyDataset(train_df, 2048)
-eval_ds = MyDataset(eval_df, 2048)
+train_ds = MyDataset(train_df, 1536)
+eval_ds = MyDataset(eval_df, 1536)
 
 training_args = TrainingArguments(
     output_dir = save_path,

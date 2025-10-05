@@ -106,7 +106,6 @@ class MyDataset(Dataset):
         return full
     
 df = pd.read_csv("train.csv")
-# df, eval_df = train_test_split(df, test_size = 0.15, random_state = 22022009)
 
 df["cplx"] = df["content"].apply(lambda s: len(s.split(". ")))
 
