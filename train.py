@@ -33,7 +33,7 @@ class TrainerSaveLossCallback(TrainerCallback):
 
 
 save_path = f"results{phase}"
-model_path = "vinai/PhoGPT-4B-Chat"  
+model_path = "vinai/PhoGPT-4B-Chat" if phase == 1 else "best_phase_1"
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
 config.attn_config['attn_impl'] = 'torch'
