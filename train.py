@@ -93,7 +93,7 @@ class MyDataset(Dataset):
         
         input_prompt = PROMPT_TEMPLATE.format(q = quest)  
         inp = tokenizer(text = input_prompt, return_tensors = "pt", padding = False, truncation = False)
-        full = tokenizer(text = quest + " " + ans, return_tensors = "pt", padding = False, truncation = False)
+        full = tokenizer(text = input_prompt + " " + ans, return_tensors = "pt", padding = False, truncation = False)
         
         inp = {k: v.squeeze(0) for k, v in inp.items()}
         full = {k: v.squeeze(0) for k, v in full.items()}
