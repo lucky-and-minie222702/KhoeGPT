@@ -89,13 +89,17 @@ class MyDataset(Dataset):
         full["attention_mask"] = pad_t(full["attention_mask"], self.max_len, 0)
         full["labels"] = pad_t(full["labels"], self.max_len, -100)
         
+        
+        print(full)
+        exit()
+        
         return full
     
 df = pd.read_csv("train.csv")
 train_df, eval_df = train_test_split(df, test_size = 0.1, random_state = 22022009)
 
-train_ds = MyDataset(train_df)
-eval_ds = MyDataset(eval_df)
+train_ds = MyDataset(train_df, 1024)
+eval_ds = MyDataset(eval_df, 1024)
 
 training_args = TrainingArguments(
     output_dir = save_path,
