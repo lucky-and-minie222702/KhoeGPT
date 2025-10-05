@@ -86,7 +86,7 @@ class MyDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, index):
-        quest, ans = get_q_a(self.data[index], self.half_a)
+        quest, ans = get_q_a(self.data[index])
         
         quest = "" if np.isnan(quest) else quest
         ans = "" if np.isnan(ans) else ans
@@ -131,7 +131,7 @@ training_args = TrainingArguments(
     output_dir = save_path,
     
     num_train_epochs = 2,
-    learning_rate = 5e-5,
+    learning_rate = 5e-5 // phase,
     
     per_device_train_batch_size = 4 // phase,
     per_device_eval_batch_size = 8,
@@ -140,10 +140,10 @@ training_args = TrainingArguments(
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 1500,
+    eval_steps = 1000,
     
     save_strategy = "steps",
-    save_steps = 1500,
+    save_steps = 1000,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
