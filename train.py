@@ -6,6 +6,11 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from transformers import Trainer, TrainingArguments, TrainerCallback
 import json
+import numpy as np
+import sys
+
+phase = int(sys.argv[1])
+
 
 class TrainerSaveLossCallback(TrainerCallback):
     def __init__(self, output_dir, output_file = "losses.json"):
@@ -27,7 +32,7 @@ class TrainerSaveLossCallback(TrainerCallback):
         print(f"Losses saved to {p}")
 
 
-save_path = "results"
+save_path = f"results{phase}"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
@@ -60,6 +65,15 @@ def pad_t(t, max_len, pad_token_id):
         pad_len = max_len - length
         pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
         return torch.cat([t, pad], dim = 0)
+    
+def get_q_a(d):
+    q = d["title"].strip()
+    a = d["content"].strip()
+    a = a.split(q)[1][1::]
+    a = a.split(". ")
+
+    return q, ". ".join(a)
+    
 
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
@@ -72,8 +86,10 @@ class MyDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, index):
-        quest = self.data[index]["title"]
-        ans = self.data[index]["content"]
+        quest, ans = get_q_a(self.data[index], self.half_a)
+        
+        quest = "" if np.isnan(quest) else quest
+        ans = "" if np.isnan(ans) else ans
         
         input_prompt = PROMPT_TEMPLATE.format(q = quest)  
         inp = tokenizer(text = input_prompt, return_tensors = "pt", padding = False, truncation = False)
@@ -92,21 +108,34 @@ class MyDataset(Dataset):
         return full
     
 df = pd.read_csv("train.csv")
-train_df, eval_df = train_test_split(df, test_size = 0.1, random_state = 22022009)
+train_df, eval_df = train_test_split(df, test_size = 0.15, random_state = 22022009)
 
-train_ds = MyDataset(train_df, 1024)
-eval_ds = MyDataset(eval_df, 1024)
+# phasse 1
+def to_cplx(s):
+    try:
+        return len(s.split(". "))
+    except:
+        return 0
+
+train_df["cplx"] = train_df["content"].apply(to_cplx)
+eval_df["cplx"] = eval_df["content"].apply(to_cplx)
+
+train_df["cplx"] = train_df[train_df["cplx"] <= 8]
+eval_df["cplx"] = eval_df[train_df["cplx"] <= 8]
+
+train_ds = MyDataset(train_df, 1024 * phase)
+eval_ds = MyDataset(eval_df, 1024 * phase)
 
 training_args = TrainingArguments(
     output_dir = save_path,
     
-    num_train_epochs = 3,
+    num_train_epochs = 2,
     learning_rate = 5e-5,
     
-    per_device_train_batch_size = 4,
+    per_device_train_batch_size = 4 // phase,
     per_device_eval_batch_size = 8,
 
-    gradient_accumulation_steps = 4,
+    gradient_accumulation_steps = 4 * phase,
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
@@ -147,4 +176,4 @@ trainer = Trainer(
 )
 
 trainer.train()
-trainer.save_model("best")
+trainer.save_model(f"best_phase_{phase}")
