@@ -86,10 +86,10 @@ training_args = TrainingArguments(
     eval_accumulation_steps = 1,
     
     eval_strategy = "steps",
-    eval_steps = 1,
+    eval_steps = 1500,
     
     save_strategy = "steps",
-    save_steps = 1,
+    save_steps = 1500,
     metric_for_best_model = "eval_loss",
 
     save_total_limit = 3,
