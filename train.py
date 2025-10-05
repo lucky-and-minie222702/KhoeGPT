@@ -36,8 +36,8 @@ model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
 lora_config = LoraConfig(
-    r = 16,
-    lora_alpha = 32,
+    r = 8,
+    lora_alpha = 16,
     target_modules = [
         "Wqkv",
         "up_proj",
@@ -65,7 +65,7 @@ class MyDataset(Dataset):
         a = self.data[index]["content"]
         input_prompt = PROMPT_TEMPLATE.format(q = q, a = a)  
         inp = tokenizer(input_prompt, return_tensors = "pt", padding = False, truncation = False)
-        inp = {k: v.squeeze(0) for k, v in inp.items()}
+        # inp = {k: v.squeeze(0) for k, v in inp.items()}
         inp["labels"] = inp["input_ids"].clone()
         return inp
     
