@@ -31,7 +31,8 @@ save_path = "results"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
-config.attn_config['attn_impl'] = 'torch'
+# config.attn_config['attn_impl'] = 'torch'
+config.attn_implementation = "flash_attention_2"
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
@@ -64,7 +65,7 @@ class MyDataset(Dataset):
         q = self.data[index]["title"]
         a = self.data[index]["content"]
         input_prompt = PROMPT_TEMPLATE.format(q = q)  
-        inp = tokenizer(text = input_prompt, text_target = a, return_tensors = None, padding = "max_length", max_length = 1024, truncation = True)
+        inp = tokenizer(text = input_prompt, text_target = a, return_tensors = "pt", padding = "max_length", max_length = 1024, truncation = True)
         inp = {k: v.squeeze(0) for k, v in inp.items()}
         return inp
     
