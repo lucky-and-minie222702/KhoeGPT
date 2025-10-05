@@ -55,7 +55,7 @@ def pad_t(t, max_len, pad_token_id):
     if length == max_len:
         return t
     elif length > max_len:
-        return pad[:max_len:]
+        return t[:max_len:]
     else:
         pad_len = max_len - length
         pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
