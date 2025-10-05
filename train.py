@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from peft import LoraConfig, TaskType, LoraModel, get_peft_model
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from transformers import Trainer, TrainingArguments, TrainerCallback
+from transformers import Trainer, TrainingArguments, TrainerCallback, DataCollatorWithPadding
 import json
 
 class TrainerSaveLossCallback(TrainerCallback):
@@ -37,12 +37,15 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)
 
 lora_config = LoraConfig(
     r = 16,
-    lora_alpha = 48,
+    lora_alpha = 32,
     target_modules = [
         "Wqkv",
+        "up_proj",
+        "down_proj",
     ],
     lora_dropout = 0.05,
     bias = "none",
+    use_rslora = True,
 )
 model = get_peft_model(model, lora_config)
 
@@ -51,9 +54,8 @@ model = get_peft_model(model, lora_config)
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời: {a}"  
 
 class MyDataset(Dataset):
-    def __init__(self, df, max_len):
+    def __init__(self, df):
         self.data = df.to_dict(orient = 'records')
-        self.max_len = max_len
         
     def __len__(self):
         return len(self.data)
@@ -62,16 +64,16 @@ class MyDataset(Dataset):
         q = self.data[index]["title"]
         a = self.data[index]["content"]
         input_prompt = PROMPT_TEMPLATE.format(q = q, a = a)  
-        inp = tokenizer(input_prompt, return_tensors = "pt", padding = "max_length", max_length = self.max_len, truncation = True)
+        inp = tokenizer(input_prompt, return_tensors = "pt", padding = False, truncation = False)
         inp = {k: v.squeeze(0) for k, v in inp.items()}
         inp["labels"] = inp["input_ids"].clone()
         return inp
     
 df = pd.read_csv("train.csv")
-train_df, eval_df = train_test_split(df, test_size = 0.0001, random_state = 22022009)
+train_df, eval_df = train_test_split(df, test_size = 0.1, random_state = 22022009)
 
-train_ds = MyDataset(train_df, 1024)
-eval_ds = MyDataset(eval_df, 1024)
+train_ds = MyDataset(train_df)
+eval_ds = MyDataset(eval_df)
 
 training_args = TrainingArguments(
     output_dir = save_path,
@@ -112,10 +114,11 @@ training_args = TrainingArguments(
 
     logging_first_step = True,
 )
-
+data_collator = DataCollatorWithPadding(tokenizer = tokenizer, padding = "max_length", max_length = 1024)
 trainer = Trainer(
     model = model,
     args = training_args,
+    data_collator = data_collator,
     train_dataset = train_ds,
     eval_dataset = eval_ds,
     tokenizer = tokenizer,
