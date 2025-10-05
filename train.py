@@ -31,8 +31,7 @@ save_path = "results"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
-# config.attn_config['attn_impl'] = 'torch'
-config.attn_implementation = "flash_attention_2"
+config.attn_config['attn_impl'] = 'torch'
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
@@ -55,10 +54,12 @@ def pad_t(t, max_len, pad_token_id = 0):
 
     if length == max_len:
         return t
-    
-    pad_len = max_len - length
-    pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
-    return torch.cat([t, pad], dim = 0)
+    elif length > max_len:
+        return pad[:max_len:]
+    else:
+        pad_len = max_len - length
+        pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
+        return torch.cat([pad, t], dim = 0)
 
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
