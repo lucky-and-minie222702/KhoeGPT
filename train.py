@@ -121,7 +121,7 @@ train_df["cplx"] = train_df["content"].apply(to_cplx)
 eval_df["cplx"] = eval_df["content"].apply(to_cplx)
 
 train_df["cplx"] = train_df[train_df["cplx"] <= 8]
-eval_df["cplx"] = eval_df[train_df["cplx"] <= 8]
+eval_df["cplx"] = eval_df[eval_df["cplx"] <= 8]
 
 train_ds = MyDataset(train_df, 1024 * phase)
 eval_ds = MyDataset(eval_df, 1024 * phase)
