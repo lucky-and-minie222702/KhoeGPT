@@ -31,7 +31,8 @@ save_path = "results"
 model_path = "vinai/PhoGPT-4B-Chat"  
 
 config = AutoConfig.from_pretrained(model_path, trust_remote_code = True)  
-config.attn_config['attn_impl'] = 'torch'
+# config.attn_config['attn_impl'] = 'torch'
+config.attn_implementation = "flash_attention_2"
 model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_dtype = torch.bfloat16, trust_remote_code=  True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
