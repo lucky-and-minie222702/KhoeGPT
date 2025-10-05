@@ -58,7 +58,7 @@ def pad_t(t, max_len, pad_token_id = 0):
     
     pad_len = max_len - length
     pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
-    return torch.cat([pad, t], dim=0)
+    return torch.cat([t, pad_len], dim=0)
 
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
