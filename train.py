@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from peft import LoraConfig, TaskType, LoraModel, get_peft_model
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from transformers import Trainer, TrainingArguments, TrainerCallback, DataCollatorWithPadding
+from transformers import Trainer, TrainingArguments, TrainerCallback
 import json
 
 class TrainerSaveLossCallback(TrainerCallback):
@@ -50,22 +50,46 @@ model = get_peft_model(model, lora_config)
 
 
 # dataset
+def pad_t(t, max_len, pad_token_id = 0):
+    length = t.shape[0]
+
+    if length == max_len:
+        return t
+    
+    pad_len = max_len - length
+    pad = torch.full((pad_len,), pad_token_id, dtype = t.dtype, device = t.device)
+    return torch.cat([pad, t], dim=0)
+
 PROMPT_TEMPLATE = "### Câu hỏi: {q}\n### Trả lời:"  
 
 class MyDataset(Dataset):
-    def __init__(self, df):
+    def __init__(self, df, max_len):
         self.data = df.to_dict(orient = 'records')
+        self.max_len = max_len
         
     def __len__(self):
         return len(self.data)
     
     def __getitem__(self, index):
-        q = self.data[index]["title"]
-        a = self.data[index]["content"]
-        input_prompt = PROMPT_TEMPLATE.format(q = q)  
-        inp = tokenizer(text = input_prompt, text_target = a, return_tensors = "pt", padding = "max_length", max_length = 1024, truncation = True)
+        quest = self.data[index]["title"]
+        ans = self.data[index]["content"]
+        
+        input_prompt = PROMPT_TEMPLATE.format(q = quest)  
+        inp = tokenizer(text = input_prompt, return_tensors = "pt", padding = False, truncation = False)
+        full = tokenizer(text = quest + " " + ans, return_tensors = "pt", padding = False, truncation = False)
+        
         inp = {k: v.squeeze(0) for k, v in inp.items()}
-        return inp
+        full = {k: v.squeeze(0) for k, v in full.items()}
+        
+        full["attention_mask"][:inp["attention_mask"].shape[0]:] = 0
+        full["labels"] = full["input_ids"].clone()
+        full["labels"][:inp["input_ids"].shape[0]:] = -100
+        
+        full["input_ids"] = pad_t(full["input_ids"], self.max_len, tokenizer.pad_token_id)
+        full["attention_mask"] = pad_t(full["attention_mask"], self.max_len, 0)
+        full["labels"] = pad_t(full["labels"], self.max_len, -100)
+        
+        return full
     
 df = pd.read_csv("train.csv")
 train_df, eval_df = train_test_split(df, test_size = 0.1, random_state = 22022009)
