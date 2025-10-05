@@ -37,12 +37,10 @@ model = AutoModelForCausalLM.from_pretrained(model_path, config = config, torch_
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code = True)  
 
 lora_config = LoraConfig(
-    r = 8,
-    lora_alpha = 16,
+    r = 16,
+    lora_alpha = 32,
     target_modules = [
         "Wqkv",
-        "up_proj",
-        "down_proj",
     ],
     lora_dropout = 0.05,
     bias = "none",
